@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Eye Game</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        padding: 0;
+        margin: 0;
+      }
+      main {
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(240, 96, 96, 0.9);
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+      }
+      nav {
+        width: 8%;
+        height: 100%;
+      }
+      #showtime {
+        background-color: white;
+        color: rgba(240, 96, 96, 0.9);
+        font-size: 48px;
+        text-align: center;
+        border-radius: 0 5px 100px 5px;
+      }
+      #container {
+        width: 640px;
+        height: 640px;
+        margin: 0 auto;
+        background-color: white;
+        display: flex;
+        flex-wrap: wrap;
+        border: 5px solid white;
+        border-radius: 15px;
+      }
+      .content {
+        border: 2px solid white;
+        border-radius: 15px;
+      }
+      #theOne {
+        opacity: 0.6;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <nav>
+        <div id="showtime"></div>
+      </nav>
+      <!-- 一定要用 id, 不知道為什麼 ?? -->
+      <div id="container"></div>
+    </main>
+
+    <script>
+      var level = 0; /*--- 答對的總次數 ---*/
+      var num_rc = 2; /*--- 內容物 row (與column) 的數量 ---*/
+      var count = 0; /*--- 一個等級內答對的次數 ---*/
+      var aka_container = document.querySelector("#container");
+      var sec = 60; /*--- 測驗時間 ---*/
+
+      function countdown() { /*--- 倒數計時器 ---*/
+        document.getElementById("showtime").innerHTML = sec;
+        if (sec > 0) {
+          setTimeout(countdown, 1000);
+          sec--;
+        } else if (sec == 0) { /*--- 測驗結束 !!! ---*/
+          alert("您的成績： Level  " + level);
+        }
+      }
+
+      function growContent(num_rc, num_theOne) { /*--- 長出所有內容物 ---*/
+        for (var j = 1; j <= num_rc ** 2; j++) {
+          if (j == num_theOne) {
+            aka_container.innerHTML += '<div class="content" id="theOne"></div>';
+          } else {
+            aka_container.innerHTML += '<div class="content"></div>';
+          }
+        }
+      }
+
+      function getRandom(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+      }
+
+      function empty() { /*--- 清空所有內容物 (class="content" 的那些)  ---*/
+        var father = document.getElementById("container");
+        while (father.hasChildNodes()) {
+          father.removeChild(father.firstChild);
+        }
+        level++; /*--- 增加使用者答對的次數 ---*/
+      }
+
+      function getColor() {
+        var r = getRandom(0, 255);
+        var g = getRandom(0, 255);
+        var b = getRandom(0, 255);
+        var color = "rgb(" + r + "," + g + "," + b + ")";
+        return color;
+      }
+
+      countdown();
+      procedure(num_rc, count);
+
+      function procedure(num_rc, count) { // 執行單一次測驗的主程序
+        var value_wh = 630 / num_rc; // 為測驗的公平起見，外圍長寬固定 630px
+        var num_theOne = getRandom(1, num_rc ** 2); // 亂數給定 theOne 的位置號碼
+        var bgColor = getColor(); // 亂數給定內容物的顏色
+        growContent(num_rc, num_theOne); // 長出內容物
+        var aka_content = document.getElementsByClassName("content");
+        for (var i = 0; i < aka_content.length; i++) {
+          aka_content[i].style.width = value_wh + "px";
+          aka_content[i].style.height = value_wh + "px";
+          aka_content[i].style.backgroundColor = bgColor;
+        }
+        var aka_theOne = document.getElementById("theOne");
+        if (num_rc >= 4) { // 內容物數量越高，opacity 的值也越高
+          aka_theOne.style.opacity = 0.7;
+          if (num_rc >= 6) {
+            aka_theOne.style.opacity = 0.8;
+            if (num_rc >= 8) {
+              aka_theOne.style.opacity = 0.85;
+            }
+          }
+        }
+        aka_theOne.addEventListener("click", gotoNext);
+        function gotoNext() { 
+          count++;
+          if (count >= num_rc / 2 && num_rc < 12) { // 晉級條件 以及 最多12x12個內容物
+            num_rc++;
+            count = 0;
+          }
+          empty();
+          procedure(num_rc, count);
+        }
+      }
+    </script>
+  </body>
+</html>
